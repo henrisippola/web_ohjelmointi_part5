@@ -2,17 +2,20 @@ import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import Notification from './components/Notification'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [newTitle, setNewTitle] = useState('')
   const [newAuthor, setNewAuthor] = useState('')
   const [newUrl, setNewUrl] = useState('')
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [message, setMessage] = useState(null)
+  const [type, setType] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
+  // tehtävä 5.2
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
@@ -28,6 +31,7 @@ const App = () => {
     )  
   }, [])
 
+  // tehtävä 5.3
   const addBlog = (event) => {
     event.preventDefault()
     const blogObject = {
@@ -44,6 +48,14 @@ const App = () => {
         setNewAuthor('')
         setNewUrl('')
       })
+      // 5.4
+      setType('alert')
+      setMessage(`blog ${blogObject.title} by ${blogObject.author} created`)
+      setTimeout(() => {
+        setMessage(null)
+        setType('')
+      }, 5000)
+    
   }
 
   const handleTitleChange = (event) => {
@@ -63,6 +75,7 @@ const App = () => {
       const user = await loginService.login({
         username, password,
       })
+      // 5.2
       window.localStorage.setItem(
         'loggedBlogappUser', JSON.stringify(user)
       )
@@ -70,10 +83,20 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
-    } catch (exception) {
-      setErrorMessage('wrong credentials')
+
+      // 5.4
+      setType('alert')
+      setMessage('logged in succesfully')
       setTimeout(() => {
-        setErrorMessage(null)
+        setMessage(null)
+        setType('')
+      }, 5000)
+    } catch (exception) {
+      setType('error')
+      setMessage('wrong credentials')
+      setTimeout(() => {
+        setMessage(null)
+        setType('')
       }, 5000)
     }
   }
@@ -103,6 +126,7 @@ const App = () => {
     </form>      
   )
 
+  // 5.3
   const blogForm = () => (
     <form onSubmit={addBlog}> Title:
       <input
@@ -121,6 +145,7 @@ const App = () => {
     </form>  
   )
 
+  // 5.2
   const handleLogout = () => {
     window.localStorage.removeItem('loggedBlogappUser')
     window.location.reload()
@@ -142,6 +167,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={message} type={type} />
       {!user && loginForm()}
       {user && <div>
           <Blogs />
